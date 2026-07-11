@@ -27,6 +27,7 @@ one-time destructive step called out explicitly.
 | 10 | `10_gamification_badges_seed.sql` | Seeds `gamification_badges` (all `criteria_type = 'points_total'`). |
 | 11 | `11_reviews_status_pending.sql` | Ensures `reviews.status` exists and flips its default to `'pending'`, closing a drift gap where the column had been added by hand in the Supabase dashboard outside any tracked migration. |
 | 12 | `12_sponsor_ads_extend.sql` | Adds `sponsor_id`, `placement`, `click_count`, `updated_at` to `sponsor_ads`, and `created_at` to `ad_clicks`, for the sponsor-ads feature. |
+| 13 | `13_fix_institution_applications.sql` | Adds `created_institution_id` and `updated_at` to `institution_applications` — both were defined in `08a` and referenced by live code, but never actually applied (see "Known drift" below). Also indexes `analytics_events` for the admin dashboard. |
 
 ## Not part of the run order
 
@@ -35,14 +36,25 @@ one-time destructive step called out explicitly.
 
 ## Known drift
 
-Some production schema exists that isn't fully captured by a numbered file here:
+Two different failure modes have shown up so far — check for both when something errors that "should"
+work per the tracked files:
+
+**Applied but never tracked** — schema that exists in production but isn't captured by any numbered
+file here, because it was applied directly in the Supabase dashboard before this repo existed:
 - `institutions.is_featured`, `institutions.featured_until`, `institutions.featured_plan_id`
 - `sponsors` table (`id`, `name`, `logo_url`, `website_url`, `is_active`, `created_at`)
 - `ad_clicks` table (`id`, `ad_id`, `user_device_id`, `ip_address`) — `created_at` was added by `12_sponsor_ads_extend.sql`, the rest predates it
+- `analytics_events` table (`id`, `event_type`, `user_device_id`, `metadata`, `created_at`) — indexed by `13_fix_institution_applications.sql`, but the table itself predates any tracked `CREATE TABLE`
 
-These were applied directly against Supabase outside this repo before it existed. If you touch any of
-them, add a numbered migration file the same way `12_sponsor_ads_extend.sql` closed the gap for
-`sponsor_ads`/`ad_clicks`, rather than assuming this repo's history is complete.
+**Tracked but never applied** — the opposite problem: a file in this repo defines a column, and live
+code depends on it, but the `ALTER`/`CREATE` was never actually run against production:
+- `institution_applications.created_institution_id` / `.updated_at` — both are in `08a_applications_tables.sql` and used by `elimux-backend`'s approve-application endpoint, but didn't exist live until `13_fix_institution_applications.sql`. The approve-application flow had likely been erroring on every call until this was caught (2026-07-11).
+
+Don't assume a column exists just because it's in a migration file, or that a column in production is
+covered by one. When adding a feature that depends on existing schema, verify directly against
+Supabase first (`select=column_name&limit=1` via the REST API is enough to confirm existence). When
+you close a gap, add a numbered migration file the same way `12` and `13` did, rather than assuming
+this repo's history is complete.
 
 ## Applying a new migration
 
