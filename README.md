@@ -29,6 +29,7 @@ one-time destructive step called out explicitly.
 | 12 | `12_sponsor_ads_extend.sql` | Adds `sponsor_id`, `placement`, `click_count`, `updated_at` to `sponsor_ads`, and `created_at` to `ad_clicks`, for the sponsor-ads feature. |
 | 13 | `13_fix_institution_applications.sql` | Adds `created_institution_id` and `updated_at` to `institution_applications` — both were defined in `08a` and referenced by live code, but never actually applied (see "Known drift" below). Also indexes `analytics_events` for the admin dashboard. |
 | 17 | `17_programs_verification_flags.sql` | Adds `is_ai_generated` and `is_verified` to `programs`, so the frontend can disclose which listings are confirmed vs AI-generated placeholder data. Run before any synthetic program data is generated. |
+| 21 | `21_institution_accounts.sql` | `institution_accounts` table — self-service institution login/claim accounts, backing `institutionAuth` middleware (one row per institution, one row per user, both UNIQUE-enforced). Applied directly via Supabase dashboard during institution-portal Phase 1 and reconstructed here from live schema afterward — see "Known drift" below. |
 
 ## Not part of the run order
 
