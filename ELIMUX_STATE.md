@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-20 (v3 — §9 timeline, §11 Skolex Harvest Program + P4-P6 phases and borrow list, §7 decisions)
+**Last updated:** 2026-07-20 (v4 — P6 excluded from §11 per founder decision, Vercel flag re-scoped Preview-only, §6/§7 updated)
 
 ---
 
@@ -85,7 +85,8 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 4. Student accounts (replaces weak device-fingerprint identity)
 5. Badge system: multiple criteria types (currently single)
 6. Leaderboard read-after-write lag
-7. Skolex Standing Queue (see §11): re-scope `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` to Preview-only in Vercel (currently also in Production) → Gate 2/3 → Phase 1 homepage spec
+7. Skolex Standing Queue (see §11): Gate 2/3 → Phase 1 homepage spec
+8. ~~P6 Developer Platform~~ — EXCLUDED from Skolex harvest scope, founder decision 2026-07-20 (see §7); revisit only as an independent initiative if ever prioritized
 
 ---
 
@@ -102,6 +103,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 | No rebrand — Skolex is harvest-only | Founder decision, 2026-07-20. ElimuX stays the brand/product/domain/SEO identity; Skolex is a frozen design reference and parts source only — never a live product |
 | Four-layer isolation stack is standard for all UX-affecting work | Feature branch → Vercel Preview verified against real prod API → Preview-only feature flag → new components only (existing live components untouched). Prevents any harvest/port work from reaching production unverified (full detail: §11) |
 | Skolex-embedded business decisions (plan pricing 8k/22k/35k/55k KES, 12 hero slots, agent fees) are DRAFTS pending founder ratification | These numbers are ported from the Skolex prototype for reference only — none are committed ElimuX pricing until the founder signs off |
+| P6 (Developer Platform) excluded from Skolex harvest scope | Founder decision, 2026-07-20. Public /api/v1 + API keys + MCP server is a separate-initiative-sized bet, not part of the harvest program's UX/monetization/directory-vertical focus |
 
 ---
 
@@ -380,8 +382,9 @@ preview URL → hold for explicit founder approval before merging. No exceptions
       workflow + tiers + success stats; Examining & Professional Bodies listing
       type + portal; TVET uses the same institution portal with type-aware
       branding
-- P6: Developer platform — public /api/v1, API key issuance + per-key rate
-      limits, docs page, MCP server (search + agents tools); SDKs/webhooks later
+- P6: EXCLUDED — Developer platform (public /api/v1, API key issuance, docs,
+      MCP server) is out of scope for the Skolex harvest program. Founder
+      decision, 2026-07-20. See §7.
 
 **Small borrow list** (lower-effort ports, not standalone phases — fold into the
 nearest relevant phase above when executed):
