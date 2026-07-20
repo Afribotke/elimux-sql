@@ -68,11 +68,13 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 
 ## 5. In-Flight Work
 
-**AI search academic/skills mode toggle** (P0 — MERGED to main on both repos, live in production API as of 2026-07-20; frontend flag not yet flipped):
+**AI search academic/skills mode toggle** (P0 — SHIPPED, live end-to-end on production as of 2026-07-20):
 - Backend `src/routes/ai-search.ts`: `institutionMode` param + `resolveInstitutionTypeIds()` — academic → University/College/Community College; skills → TVET Institute/Polytechnic/Vocational School/Institute of Technology. Applied as `.in('type_id', ids)` only when mode set.
 - Frontend: `SearchModeToggle` behind `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` (byte-identical old behavior when unset).
 - **Gate 1: verified 2026-07-20.** All 7 hardcoded type names match the live `institution_types` table exactly (case/spelling). Code already fails open: `modeTypeIds.length > 0` gates the `.in('type_id', ...)` call, so an empty resolution never produces `.in('type_id', [])`.
-- **Process note:** PR #1 on both repos merged to `main` and Railway auto-deployed BEFORE Gate 1's ruling landed — confirmed live via direct POST to `api.elimux.ke/api/ai-search`. Not a Claude Code action; flagged as a gate-integrity gap. Frontend flag `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` is provisioned in Vercel for BOTH Preview and Production scope (violates §11 layer 3's "Preview-only" rule as configured), but its Production value is currently an empty string, so the toggle UI does not render live yet — awaiting Gate 2/3.
+- **Gate 2: verified 2026-07-20.** Live curl matrix — baseline 1930 programs/8969 institutions, academic 1543/8926, skills 1016/42, invalid-mode probe falls open to baseline (HTTP 200 throughout).
+- **Gate 3: verified 2026-07-20.** `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE=true` set to Production scope only (Preview kept at its existing empty value as a separate record), production rebuilt (dpl_GVLGt59ScecAWrXt9Dk1DVWSMPVP, main@eea2ccf, 21,509 pages), aliased to elimux.ke/www.elimux.ke/v2.elimux.ke. Playwright against the live site: toggle renders, clicking "Skills & Trades" flips `aria-pressed` and the next search correctly POSTs `institutionMode:"skills"` (captured on the wire, not simulated), mobile pill renders at iPhone-12 width, zero JS/hydration console errors (2 pre-existing favicon-fallback 404s only, same signature as the Clearbit-removal check).
+- **Process note:** PR #1 on both repos merged to `main` and Railway auto-deployed BEFORE Gate 1's ruling landed — confirmed live via direct POST to `api.elimux.ke/api/ai-search`. Not a Claude Code action; flagged as a gate-integrity gap. §11 layer 3 ("Preview-only" flag scoping) is now satisfied for Preview; Production carries the flag deliberately as of Gate 3.
 - Empty-name-resolution must NOT produce `.in('type_id', [])` (silently zeroes results) — confirmed the code already falls back to no filter + logs a warning (`ai-search.ts:244-250`).
 
 ---
