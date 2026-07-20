@@ -87,6 +87,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 6. Leaderboard read-after-write lag
 7. Skolex Standing Queue (see §11): Gate 2/3 → Phase 1 homepage spec
 8. ~~P6 Developer Platform~~ — EXCLUDED from Skolex harvest scope, founder decision 2026-07-20 (see §7); revisit only as an independent initiative if ever prioritized
+9. TVET/skills data growth — skills-mode search matches only 42 institutions today vs 8,926 in academic mode (Gate 2 curl matrix, 2026-07-20); TVET Institute/Polytechnic/Vocational School/Institute of Technology directory coverage is thin relative to universities/colleges and should be expanded before P0's skills toggle is a genuinely useful discovery path
 
 ---
 
