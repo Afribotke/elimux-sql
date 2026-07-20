@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-20 (v2 — §9 git-history timeline filled, §11 Skolex Harvest Program ratified, §7 decisions appended)
+**Last updated:** 2026-07-20 (v3 — §9 timeline, §11 Skolex Harvest Program + P4-P6 phases and borrow list, §7 decisions)
 
 ---
 
@@ -43,6 +43,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 - **Founder = intermediary:** forwards messages, runs SQL in Supabase Editor when asked, approves permission prompts. NEVER manually creates files, NEVER runs JavaScript.
 - **Stage gates:** audit → code → review checklist → deploy → verify (SQL + API + UI) → cleanup test data → update elimux-sql.
 - **Discipline:** multi-tenancy ownership checks (403) on every tenant-scoped route; whitelist-only PUT updates; money paths verified to the cent; test data cleaned after every test; test-auth-users deleted after use.
+- **Founder rule (2026-07-20):** no change merges without the founder previewing it first. For visual/UX-affecting work: push the branch → wait for the Vercel preview deployment → post the preview URL → hold for explicit founder approval before merging. No exceptions. (Non-visual reference/doc changes, like design-token extraction, use the PR diff itself as the "preview.")
 
 ---
 
@@ -67,11 +68,12 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 
 ## 5. In-Flight Work
 
-**AI search academic/skills mode toggle** (feature branch, UNMERGED):
+**AI search academic/skills mode toggle** (P0 — MERGED to main on both repos, live in production API as of 2026-07-20; frontend flag not yet flipped):
 - Backend `src/routes/ai-search.ts`: `institutionMode` param + `resolveInstitutionTypeIds()` — academic → University/College/Community College; skills → TVET Institute/Polytechnic/Vocational School/Institute of Technology. Applied as `.in('type_id', ids)` only when mode set.
 - Frontend: `SearchModeToggle` behind `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` (byte-identical old behavior when unset).
-- **STATUS: Gate 1 verified 2026-07-20** — all 7 hardcoded type names match the live `institution_types` table exactly (case/spelling). Code already fails open: `modeTypeIds.length > 0` gates the `.in('type_id', ...)` call, so an empty resolution never produces `.in('type_id', [])`. Awaiting Kimi's ruling before Gate 2 (merge → Railway deploy → prod curl 3-way + invalid-mode probe) and Gate 3 (Vercel flag → rebuild → Playwright).
-- Empty-name-resolution must NOT produce `.in('type_id', [])` (silently zeroes results) — confirmed the code already falls back to no filter + logs a warning (see `ai-search.ts:244-250`).
+- **Gate 1: verified 2026-07-20.** All 7 hardcoded type names match the live `institution_types` table exactly (case/spelling). Code already fails open: `modeTypeIds.length > 0` gates the `.in('type_id', ...)` call, so an empty resolution never produces `.in('type_id', [])`.
+- **Process note:** PR #1 on both repos merged to `main` and Railway auto-deployed BEFORE Gate 1's ruling landed — confirmed live via direct POST to `api.elimux.ke/api/ai-search`. Not a Claude Code action; flagged as a gate-integrity gap. Frontend flag `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` is provisioned in Vercel for BOTH Preview and Production scope (violates §11 layer 3's "Preview-only" rule as configured), but its Production value is currently an empty string, so the toggle UI does not render live yet — awaiting Gate 2/3.
+- Empty-name-resolution must NOT produce `.in('type_id', [])` (silently zeroes results) — confirmed the code already falls back to no filter + logs a warning (`ai-search.ts:244-250`).
 
 ---
 
@@ -83,7 +85,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 4. Student accounts (replaces weak device-fingerprint identity)
 5. Badge system: multiple criteria types (currently single)
 6. Leaderboard read-after-write lag
-7. Skolex Standing Queue (see §11): Gate 1 ruling → Skolex inventory + DESIGN_TOKENS.md → Phase 1 homepage spec
+7. Skolex Standing Queue (see §11): re-scope `NEXT_PUBLIC_FEATURE_SKILLS_TOGGLE` to Preview-only in Vercel (currently also in Production) → Gate 2/3 → Phase 1 homepage spec
 
 ---
 
@@ -99,6 +101,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 | One bundled deploy per workstream | 21K-page static builds are expensive; batch DB changes before rebuilds |
 | No rebrand — Skolex is harvest-only | Founder decision, 2026-07-20. ElimuX stays the brand/product/domain/SEO identity; Skolex is a frozen design reference and parts source only — never a live product |
 | Four-layer isolation stack is standard for all UX-affecting work | Feature branch → Vercel Preview verified against real prod API → Preview-only feature flag → new components only (existing live components untouched). Prevents any harvest/port work from reaching production unverified (full detail: §11) |
+| Skolex-embedded business decisions (plan pricing 8k/22k/35k/55k KES, 12 hero slots, agent fees) are DRAFTS pending founder ratification | These numbers are ported from the Skolex prototype for reference only — none are committed ElimuX pricing until the founder signs off |
 
 ---
 
@@ -321,8 +324,10 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 - sql: Add referrals.referrer_device_id and gamification_points 'badge' action type
 
 **2026-07-20**
-- backend: feat(ai-search): add optional institutionMode filter (academic/skills)
-- frontend: feat(ai-search): University/Skills & Trades toggle UI + placeholder modes
+- backend: feat(ai-search): add optional institutionMode filter (academic/skills) — merged PR #1
+- frontend: feat(ai-search): University/Skills & Trades toggle UI + placeholder modes — merged PR #1
+- sql: Ratify Skolex Harvest Program (§11) and complete state doc build-out
+- frontend: Add Skolex design-token reference (§11 harvest inventory) — feat/skolex-reference, PR #2 open
 
 ---
 
@@ -357,13 +362,35 @@ merge with flag OFF → verify production unchanged → flip flag in Vercel
 Production scope → rebuild → verify live.
 Rollback = flag off, or `vercel rollback` (static export = full snapshots).
 
+**Founder rule (2026-07-20):** no change merges without the founder previewing it
+first. Push the branch → wait for the Vercel preview deployment → post the
+preview URL → hold for explicit founder approval before merging. No exceptions.
+
 **Phases:**
 - P0: skills/academic AI-search toggle (in flight — Gate 1 pending)
 - P1: homepage hero port (AI ask box + mode pill + localization bar),
       Skolex visual language, ElimuX branding
 - P2: localization config (country → qualification system + currency)
 - P3: multi-vertical ads (schema + portal + homepage tabs; real campaigns only)
-- P4: DELETED — rebrand rejected
+- P4: Monetization expansion — ad plan tiers with DB-stored pricing, hero slot
+      capacity, public Advertise rate-card page, agent fees, revenue
+      milestones widget *(slot reused — original P4 "rebrand" scope was
+      rejected/deleted 2026-07-19)*
+- P5: New directory verticals — visa-agent listings with licence verification
+      workflow + tiers + success stats; Examining & Professional Bodies listing
+      type + portal; TVET uses the same institution portal with type-aware
+      branding
+- P6: Developer platform — public /api/v1, API key issuance + per-key rate
+      limits, docs page, MCP server (search + agents tools); SDKs/webhooks later
+
+**Small borrow list** (lower-effort ports, not standalone phases — fold into the
+nearest relevant phase above when executed):
+- WhatsApp float + share tracking
+- Share-card OG image
+- Security-panel + platform-settings admin pages
+- Country-config admin (= P2 schema)
+- Bottom mobile nav (= P1)
+- RBAC (deferred — no target phase yet)
 
 **Launch-quality bar ("no room for errors"):**
 - Nothing merges without passing its numbered gate; gates are binary
@@ -375,6 +402,6 @@ Rollback = flag off, or `vercel rollback` (static export = full snapshots).
 - §10 session-close checklist runs every session, no skipping
 
 **Standing queue:**
-1. Gate 1 — types-table list + empty-resolution behavior (P0 blocker)
-2. Skolex inventory + design/skolex-reference/DESIGN_TOKENS.md committed
+1. Gate 1 — types-table list + empty-resolution behavior (P0 blocker) — DONE 2026-07-20, awaiting Kimi's ruling on Gate 2/3
+2. Skolex inventory + design/skolex-reference/DESIGN_TOKENS.md committed — DONE 2026-07-20 (feat/skolex-reference, PR #2)
 3. Phase 1 homepage spec (authored by Kimi, executed on feat/skolex-home)
