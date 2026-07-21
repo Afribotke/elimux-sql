@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-21 (v8 — migration 25 applied+verified+committed; Task 3 Partners & Advertisers homepage section built on feat/skolex-ads, Preview-verified (13/13 checks incl. live test-campaign probe), holding for founder approval before merge)
+**Last updated:** 2026-07-21 (v9 — P2 (Partners & Advertisers homepage section) SHIPPED, live on production; phases renumbered — see §11)
 
 ---
 
@@ -124,6 +124,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 | P6 (Developer Platform) excluded from Skolex harvest scope | Founder decision, 2026-07-20. Public /api/v1 + API keys + MCP server is a separate-initiative-sized bet, not part of the harvest program's UX/monetization/directory-vertical focus |
 | Skolex university-portal feature diff ruled 2026-07-21 (Kimi, on the full inventory in §5/design/skolex-reference/html/skolex-university-portal.html) | ADOPT: dashboard landing + profile-field extension (portal upgrade batch, after P2, §6#10); institution-run ad campaigns as a direction (unify with advertiser flow in P4/P5, §6#15). BACKLOG: self-service scholarships, applications review queue, gated student-lead unlock (DPA 2019 caution), notifications panel (§6#11-14). REJECT: multi-user/RBAC — one user per institution is fine at this scale, revisit only when institutions ask. Billing tiers (#5 in the original diff) needs no separate item — already covered by P4 monetization |
 | `ad_campaigns.featured` is a separate BOOLEAN from `status` | Migration 25, ratified 2026-07-21. `status='active'` means "running/billable"; `featured` means "chosen for the homepage carousel" — two independent decisions (one automatic, one curatorial), conflating them would block feature-curating without pausing a campaign |
+| All platform prices centralized in `platform_settings` — never hardcoded in frontend/backend code | Founder directive, 2026-07-21. Entry ad price ratified at KES 10,000/month; public impression counts default OFF. Proven config-sourced (not hardcoded) during Task 3 acceptance testing: changed the DB value, confirmed the client refetch picked it up |
 
 ---
 
@@ -362,6 +363,8 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 - sql: Founder applies migration 25 in Supabase — verified live, committed
 - backend: feat(skolex-ads): add public config + homepage ads endpoints (Task 3, additive) — merged to `main`
 - frontend: feat(skolex-ads): Partners & Advertisers homepage section behind `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` — Preview-verified (13/13 checks incl. live test-campaign probe), holding for founder approval
+- frontend: Add pause control to FeaturedCarousel (founder-caught gap vs spec, fixed by Kimi) — re-verified (6/6 pause/rotate checks), merged to `main`
+- frontend: P2 cutover — flag flipped to Production, verified live on `www.elimux.ke`. **P2 (Partners & Advertisers homepage section) SHIPPED.**
 
 ---
 
@@ -408,12 +411,21 @@ preview URL → hold for explicit founder approval before merging. No exceptions
       production 2026-07-21 behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME`
       (now true in Production scope) (see §5 for full detail, including
       a flagged deviation from the "existing components untouched" rule)
-- P2: localization config (country → qualification system + currency)
-- P3: multi-vertical ads (schema + portal + homepage tabs; real campaigns only)
+- P2: Partners & Advertisers homepage ads section — SHIPPED, live on
+      production 2026-07-21 behind `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` (now
+      true in Production scope) (see §5 for full detail). Pulled forward
+      in the phase order 2026-07-21 — this was multi-vertical ads display,
+      previously slotted as P3
+- P3: localization config (country → qualification system + currency)
+      *(previously slotted as P2, renumbered 2026-07-21)*
 - P4: Monetization expansion — ad plan tiers with DB-stored pricing, hero slot
       capacity, public Advertise rate-card page, agent fees, revenue
-      milestones widget *(slot reused — original P4 "rebrand" scope was
-      rejected/deleted 2026-07-19)*
+      milestones widget, **plus the advertiser-facing campaign-creation UI
+      for vertical/chips/cta_label/featured** (P2 shipped the public display
+      side only — the portal side for advertisers to self-select these
+      fields, and a full multi-vertical campaign management flow, is the
+      P3-remainder folded in here 2026-07-21) *(slot reused — original P4
+      "rebrand" scope was rejected/deleted 2026-07-19)*
 - P5: New directory verticals — visa-agent listings with licence verification
       workflow + tiers + success stats; Examining & Professional Bodies listing
       type + portal; TVET uses the same institution portal with type-aware
@@ -446,10 +458,10 @@ nearest relevant phase above when executed):
 3. Phase 1 homepage spec (authored by Kimi, executed on feat/skolex-home) — DONE 2026-07-21: spec delivered, implemented, Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`
 4. P1 cutover — DONE 2026-07-21: flag flipped to Production, rebuilt, verified live on `www.elimux.ke` (headline, pill, ask box, chips, localization bar, stats line, mode routing, country persistence, iPhone-12, zero console errors). **P1 SHIPPED.**
 5. Skolex university-portal reference (`design/skolex-reference/html/skolex-university-portal.html`) committed 2026-07-21 — full feature diff vs ElimuX's live institution portal reported for Kimi's adoption ruling
-6. Task 3 — Partners & Advertisers homepage section:
-   - Gate A DONE 2026-07-21: migration 25 (`platform_settings` + `ad_campaigns.vertical`/`chips`/`cta_label`/`featured`) applied by founder in Supabase, verified live, committed (`elimux-sql@62ed653`)
-   - Backend DONE 2026-07-21, merged to `main` (additive, ships dark until flag reveals UI): `GET /api/config/public` (whitelisted `platform_settings`), `GET /api/ads/homepage` (active campaigns grouped by vertical, joined to advertiser name/logo)
-   - Frontend DONE 2026-07-21 on `feat/skolex-ads` (NOT merged — holding for founder approval): `AdsSection` + 7 subcomponents under `src/components/skolex/ads/`, mounted into `SkolexHome` (itself already Preview-only, so this stays double-gated). Flag `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` set Preview-only in Vercel
-   - Preview-verified: 13/13 checks — vertical tabs (8), featured carousel, sponsored card grid, empty-vertical placeholder copy, config-sourced price (proved by changing the DB value and confirming client refetch), WhatsApp/Advertise banner, flag-off production untouched, iPhone-12 clean, zero console errors. Live test-campaign probe: registered a real advertiser through `/api/advertiser/register`, admin-approved it, created+approved a campaign through `/api/campaigns` + `/api/admin/campaigns/:id/approve`, set `vertical`/`featured`/`chips`/`cta_label` directly (no advertiser-facing UI/API exists yet for those fields — out of scope for 3b), confirmed it rendered in the TVET tab and carousel, clicked the real CTA and confirmed a `campaign_clicks` row was written, then deleted the campaign/advertiser/`campaign_clicks` rows/auth user and verified zero residue
-   - **Known gap vs spec, not fixed (Kimi's code applied verbatim per instruction):** `FeaturedCarousel` has auto-rotate + arrows but no pause control; §3c asked for "auto-rotate + arrows + pause"
-   - Preview URL: `elimux-frontend-app-git-feat-skolex-ads-afribotke.vercel.app` — holding for founder approval before merge (§7 cutover, when it comes, is a separate later instruction)
+6. Task 3 / P2 — Partners & Advertisers homepage section — **SHIPPED 2026-07-21**, live on production (`dpl_6TGaPFpT6nu5GStBYDwPF5ZrFhxA`, `www.elimux.ke`/`elimux.ke`):
+   - Gate A: migration 25 (`platform_settings` + `ad_campaigns.vertical`/`chips`/`cta_label`/`featured`) applied by founder in Supabase, verified live, committed (`elimux-sql@62ed653`)
+   - Backend merged to `main` (additive, ships dark): `GET /api/config/public` (whitelisted `platform_settings`), `GET /api/ads/homepage` (active campaigns grouped by vertical, joined to advertiser name/logo)
+   - Frontend: `AdsSection` + 8 subcomponents (incl. `FeaturedCarousel` pause control, added after initial review) under `src/components/skolex/ads/`, mounted into `SkolexHome` (double-gated: `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` + `NEXT_PUBLIC_FEATURE_SKOLEX_ADS`, both now `true` in Production)
+   - Preview-verified pre-merge: 13/13 checks (vertical tabs, carousel, card grid, empty-state placeholders, config-sourced price, WhatsApp/Advertise banner, flag-off untouched, mobile, zero console errors) + a live test-campaign probe (registered a real advertiser, admin-approved it, created+approved a campaign, confirmed TVET-tab/carousel rendering, real CTA click wrote a `campaign_clicks` row, full cleanup with zero residue) + a separate 2-campaign pause/rotate probe (6/6 checks: aria-pressed flips, rotation actually stops while paused and resumes after)
+   - Cutover verified live 2026-07-21: ads section renders with placeholders in all 8 verticals (no real campaigns yet), price reads KES 10,000/month from `platform_settings`, Advertise/placeholder CTAs → `/advertiser/register`, WhatsApp → `wa.me/254793002436`, tabs filter, zero console errors, iPhone-12 clean
+   - Founder-caught gap, since fixed: `FeaturedCarousel` initially shipped without a pause control (spec asked for "auto-rotate + arrows + pause") — flagged in review, Kimi supplied the fix, applied and re-verified before merge
