@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-21 (v7 — P1 SHIPPED; Skolex university-portal feature diff ruled by Kimi (§6/§7); migration 25 (Task 3 Gate A) ratified, drafted, awaiting founder confirmation it ran in Supabase before commit)
+**Last updated:** 2026-07-21 (v8 — migration 25 applied+verified+committed; Task 3 Partners & Advertisers homepage section built on feat/skolex-ads, Preview-verified (13/13 checks incl. live test-campaign probe), holding for founder approval before merge)
 
 ---
 
@@ -359,6 +359,9 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 - frontend: Add Skolex university-portal reference HTML (§11 harvest inventory)
 - sql: Kimi rules on university-portal feature diff — adopt/backlog/reject recorded in §6/§7
 - sql: Draft migration 25 (platform_settings + ad_campaigns verticals/creative fields) for Task 3 Gate A — ratified by Kimi, not yet applied (awaiting founder to run it in Supabase)
+- sql: Founder applies migration 25 in Supabase — verified live, committed
+- backend: feat(skolex-ads): add public config + homepage ads endpoints (Task 3, additive) — merged to `main`
+- frontend: feat(skolex-ads): Partners & Advertisers homepage section behind `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` — Preview-verified (13/13 checks incl. live test-campaign probe), holding for founder approval
 
 ---
 
@@ -443,4 +446,10 @@ nearest relevant phase above when executed):
 3. Phase 1 homepage spec (authored by Kimi, executed on feat/skolex-home) — DONE 2026-07-21: spec delivered, implemented, Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`
 4. P1 cutover — DONE 2026-07-21: flag flipped to Production, rebuilt, verified live on `www.elimux.ke` (headline, pill, ask box, chips, localization bar, stats line, mode routing, country persistence, iPhone-12, zero console errors). **P1 SHIPPED.**
 5. Skolex university-portal reference (`design/skolex-reference/html/skolex-university-portal.html`) committed 2026-07-21 — full feature diff vs ElimuX's live institution portal reported for Kimi's adoption ruling
-6. Task 3 — Partners & Advertisers homepage section: Gate A (schema audit + migration 25 presented for founder to run) is next
+6. Task 3 — Partners & Advertisers homepage section:
+   - Gate A DONE 2026-07-21: migration 25 (`platform_settings` + `ad_campaigns.vertical`/`chips`/`cta_label`/`featured`) applied by founder in Supabase, verified live, committed (`elimux-sql@62ed653`)
+   - Backend DONE 2026-07-21, merged to `main` (additive, ships dark until flag reveals UI): `GET /api/config/public` (whitelisted `platform_settings`), `GET /api/ads/homepage` (active campaigns grouped by vertical, joined to advertiser name/logo)
+   - Frontend DONE 2026-07-21 on `feat/skolex-ads` (NOT merged — holding for founder approval): `AdsSection` + 7 subcomponents under `src/components/skolex/ads/`, mounted into `SkolexHome` (itself already Preview-only, so this stays double-gated). Flag `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` set Preview-only in Vercel
+   - Preview-verified: 13/13 checks — vertical tabs (8), featured carousel, sponsored card grid, empty-vertical placeholder copy, config-sourced price (proved by changing the DB value and confirming client refetch), WhatsApp/Advertise banner, flag-off production untouched, iPhone-12 clean, zero console errors. Live test-campaign probe: registered a real advertiser through `/api/advertiser/register`, admin-approved it, created+approved a campaign through `/api/campaigns` + `/api/admin/campaigns/:id/approve`, set `vertical`/`featured`/`chips`/`cta_label` directly (no advertiser-facing UI/API exists yet for those fields — out of scope for 3b), confirmed it rendered in the TVET tab and carousel, clicked the real CTA and confirmed a `campaign_clicks` row was written, then deleted the campaign/advertiser/`campaign_clicks` rows/auth user and verified zero residue
+   - **Known gap vs spec, not fixed (Kimi's code applied verbatim per instruction):** `FeaturedCarousel` has auto-rotate + arrows but no pause control; §3c asked for "auto-rotate + arrows + pause"
+   - Preview URL: `elimux-frontend-app-git-feat-skolex-ads-afribotke.vercel.app` — holding for founder approval before merge (§7 cutover, when it comes, is a separate later instruction)
