@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-21 (v5 — P1 homepage hero port merged to `main` behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` (Preview-only); production verified unchanged post-merge; cutover to Production not yet flipped)
+**Last updated:** 2026-07-21 (v6 — P1 homepage hero port SHIPPED, cutover flipped, live on production; Skolex university-portal reference committed; Task 3 ads-section Gate A pending)
 
 ---
 
@@ -77,14 +77,14 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 - **Process note:** PR #1 on both repos merged to `main` and Railway auto-deployed BEFORE Gate 1's ruling landed — confirmed live via direct POST to `api.elimux.ke/api/ai-search`. Not a Claude Code action; flagged as a gate-integrity gap. §11 layer 3 ("Preview-only" flag scoping) is now satisfied for Preview; Production carries the flag deliberately as of Gate 3.
 - Empty-name-resolution must NOT produce `.in('type_id', [])` (silently zeroes results) — confirmed the code already falls back to no filter + logs a warning (`ai-search.ts:244-250`).
 
-**Skolex Harvest P1 — homepage hero port** (CODE MERGED to `main` 2026-07-21, flag Preview-only, cutover to Production NOT yet flipped):
+**Skolex Harvest P1 — homepage hero port** (SHIPPED 2026-07-21, live on production behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME=true`):
 - Spec: `elimux-frontend/design/p1-homepage-spec.md` (authored by Kimi, committed 2026-07-21)
 - New components under `elimux-frontend/src/components/skolex/`: `SkolexHome`, `HeroSearch`, `HeroModePill`, `LocalizationBar`, `TrustStats` + scoped `skolex-theme.css`. `page.tsx`'s existing homepage body was renamed to `CurrentHome` and left otherwise byte-identical — diffed to confirm only an additive top-level flag branch was introduced.
 - Headline copy deviated from the spec's draft ("...top 10 options") to **"Ask anything. Find your perfect course."** per the spec's own verify-first instruction — the AI search results page renders plain result grids, not a ranked top-10 shortlist.
 - **Flagged deviation from §11's "existing components untouched" rule:** `ai-search/page.tsx` and `AISearchBar` got small additive changes (read `?q=`/`?mode=` via `useSearchParams`, optional `initialQuery` prop) so the hero's submit-and-navigate flow actually works — without it the spec's own §6 acceptance criteria (#3/#4) were unsatisfiable, and the spec explicitly disallowed a direct API call from the homepage as the alternative. No-op / behaviorally identical to before when the params are absent. Founder was shown this explicitly and approved the merge with it called out — not yet written up as a standing §11 exception.
 - Verified on Vercel Preview (`feat/skolex-home`) via Playwright: 18/18 of spec §6's acceptance checks pass. One apparent console-error hit during testing was `<vercel-live-feedback>` (Vercel's own preview-only toolbar widget, not app code, absent on production).
 - Founder approved the preview 2026-07-21 → merged to `main` same day → Production auto-rebuilt (21,509 pages, clean, homepage bundle size unchanged at 10.9 kB) → verified live: H1/subcopy unchanged, zero console errors, flag confirmed absent from Production env scope (Preview-only, unchanged).
-- **Next (not yet done):** cutover — flip `NEXT_PUBLIC_FEATURE_SKOLEX_HOME=true` in Production scope, rebuild, verify live. Per spec §7 this is a separate, later instruction; founder has not yet given it.
+- **Cutover DONE 2026-07-21:** `NEXT_PUBLIC_FEATURE_SKOLEX_HOME=true` added to Production scope → new build (`dpl_E8J6UCtihgko8dNuxEKy1b9H3HhH`) → verified live on `www.elimux.ke`: headline/pill/ask-box/chips/localization-bar/stats-line all render; `/ai-search/?q=medicine` auto-runs (baseline results); skills mode routes with `mode=skills`; country selection survives reload; iPhone-12 clean (no horizontal scroll); zero console errors on desktop and mobile. **P1 is SHIPPED.**
 
 ---
 
@@ -96,7 +96,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 4. Student accounts (replaces weak device-fingerprint identity)
 5. Badge system: multiple criteria types (currently single)
 6. Leaderboard read-after-write lag
-7. Skolex Standing Queue (see §11): P1 code merged to `main` (Preview-only) — cutover to Production is the next queue item, pending founder go-ahead
+7. Skolex Standing Queue (see §11): P1 SHIPPED (live on production 2026-07-21) — Task 3 (Partners & Advertisers homepage section) is the active queue item
 8. ~~P6 Developer Platform~~ — EXCLUDED from Skolex harvest scope, founder decision 2026-07-20 (see §7); revisit only as an independent initiative if ever prioritized
 9. TVET/skills data growth — skills-mode search matches only 42 institutions today vs 8,926 in academic mode (Gate 2 curl matrix, 2026-07-20); TVET Institute/Polytechnic/Vocational School/Institute of Technology directory coverage is thin relative to universities/colleges and should be expanded before P0's skills toggle is a genuinely useful discovery path
 
@@ -346,7 +346,9 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 **2026-07-21**
 - frontend: Merge PR #2 — Skolex design-token reference (docs-only)
 - frontend: Add Kimi's P1 homepage hero port spec (`design/p1-homepage-spec.md`)
-- frontend: feat(skolex-home): P1 homepage hero port behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` — Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`; cutover to Production not yet flipped
+- frontend: feat(skolex-home): P1 homepage hero port behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` — Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`
+- frontend: P1 cutover — flag flipped to Production, verified live on `www.elimux.ke`. **P1 SHIPPED.**
+- frontend: Add Skolex university-portal reference HTML (§11 harvest inventory)
 
 ---
 
@@ -389,11 +391,10 @@ preview URL → hold for explicit founder approval before merging. No exceptions
 - P0: skills/academic AI-search toggle — SHIPPED, live end-to-end on
       production as of 2026-07-20 (see §5)
 - P1: homepage hero port (AI ask box + mode pill + localization bar),
-      Skolex visual language, ElimuX branding — CODE MERGED to `main`
-      2026-07-21 behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` (Preview-only);
-      cutover to Production not yet flipped, pending separate founder
-      go-ahead (see §5 for full detail, including a flagged deviation
-      from the "existing components untouched" rule)
+      Skolex visual language, ElimuX branding — SHIPPED, live on
+      production 2026-07-21 behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME`
+      (now true in Production scope) (see §5 for full detail, including
+      a flagged deviation from the "existing components untouched" rule)
 - P2: localization config (country → qualification system + currency)
 - P3: multi-vertical ads (schema + portal + homepage tabs; real campaigns only)
 - P4: Monetization expansion — ad plan tiers with DB-stored pricing, hero slot
@@ -430,4 +431,6 @@ nearest relevant phase above when executed):
 1. Gate 1 — types-table list + empty-resolution behavior (P0 blocker) — DONE 2026-07-20, awaiting Kimi's ruling on Gate 2/3
 2. Skolex inventory + design/skolex-reference/DESIGN_TOKENS.md committed — DONE 2026-07-20 (feat/skolex-reference, PR #2, merged 2026-07-21)
 3. Phase 1 homepage spec (authored by Kimi, executed on feat/skolex-home) — DONE 2026-07-21: spec delivered, implemented, Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`
-4. P1 cutover — flip `NEXT_PUBLIC_FEATURE_SKOLEX_HOME=true` in Production scope, rebuild, verify live. Awaiting separate founder go-ahead (see §5, §7 cutover protocol)
+4. P1 cutover — DONE 2026-07-21: flag flipped to Production, rebuilt, verified live on `www.elimux.ke` (headline, pill, ask box, chips, localization bar, stats line, mode routing, country persistence, iPhone-12, zero console errors). **P1 SHIPPED.**
+5. Skolex university-portal reference (`design/skolex-reference/html/skolex-university-portal.html`) committed 2026-07-21 — full feature diff vs ElimuX's live institution portal reported for Kimi's adoption ruling
+6. Task 3 — Partners & Advertisers homepage section: Gate A (schema audit + migration 25 presented for founder to run) is next
