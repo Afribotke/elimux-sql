@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-21 (v6 — P1 homepage hero port SHIPPED, cutover flipped, live on production; Skolex university-portal reference committed; Task 3 ads-section Gate A pending)
+**Last updated:** 2026-07-21 (v7 — P1 SHIPPED; Skolex university-portal feature diff ruled by Kimi (§6/§7); migration 25 (Task 3 Gate A) ratified, drafted, awaiting founder confirmation it ran in Supabase before commit)
 
 ---
 
@@ -99,6 +99,12 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 7. Skolex Standing Queue (see §11): P1 SHIPPED (live on production 2026-07-21) — Task 3 (Partners & Advertisers homepage section) is the active queue item
 8. ~~P6 Developer Platform~~ — EXCLUDED from Skolex harvest scope, founder decision 2026-07-20 (see §7); revisit only as an independent initiative if ever prioritized
 9. TVET/skills data growth — skills-mode search matches only 42 institutions today vs 8,926 in academic mode (Gate 2 curl matrix, 2026-07-20); TVET Institute/Polytechnic/Vocational School/Institute of Technology directory coverage is thin relative to universities/colleges and should be expanded before P0's skills toggle is a genuinely useful discovery path
+10. **Institution portal upgrade batch** (scheduled after P2, ruled 2026-07-21 from the Skolex university-portal feature diff — see §5/§7): dashboard landing screen (KPI tiles + quick actions + recent-activity feed) + profile whitelist extension (WhatsApp admissions line, virtual tour, accreditation number/body, QS/national ranking — accreditation and ranking also feed public trust badges)
+11. Self-service scholarships (institution-managed, not admin-only) — needs schema + a public display surface; ruled BACKLOG 2026-07-21
+12. Applications review queue (admissions pending/in-review workflow on the institution side) — real workflow feature, schedule with P5; ruled BACKLOG 2026-07-21
+13. Gated student-lead unlock (Pro-paywalled contact reveal) — genuine revenue lever, but **student data triggers Kenya DPA 2019 consent/privacy design first; never sell leads without it**. Ruled BACKLOG-with-caution 2026-07-21
+14. Notifications settings panel — needs notification infrastructure that doesn't exist yet; ruled BACKLOG 2026-07-21
+15. Institution-run ad campaigns (institutions launching their own campaigns from their own portal, not via a separate advertiser account) — ADOPTED as direction 2026-07-21; unify with the advertiser flow during P4/P5 design, not before
 
 ---
 
@@ -116,6 +122,8 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 | Four-layer isolation stack is standard for all UX-affecting work | Feature branch → Vercel Preview verified against real prod API → Preview-only feature flag → new components only (existing live components untouched). Prevents any harvest/port work from reaching production unverified (full detail: §11) |
 | Skolex-embedded business decisions (plan pricing 8k/22k/35k/55k KES, 12 hero slots, agent fees) are DRAFTS pending founder ratification | These numbers are ported from the Skolex prototype for reference only — none are committed ElimuX pricing until the founder signs off |
 | P6 (Developer Platform) excluded from Skolex harvest scope | Founder decision, 2026-07-20. Public /api/v1 + API keys + MCP server is a separate-initiative-sized bet, not part of the harvest program's UX/monetization/directory-vertical focus |
+| Skolex university-portal feature diff ruled 2026-07-21 (Kimi, on the full inventory in §5/design/skolex-reference/html/skolex-university-portal.html) | ADOPT: dashboard landing + profile-field extension (portal upgrade batch, after P2, §6#10); institution-run ad campaigns as a direction (unify with advertiser flow in P4/P5, §6#15). BACKLOG: self-service scholarships, applications review queue, gated student-lead unlock (DPA 2019 caution), notifications panel (§6#11-14). REJECT: multi-user/RBAC — one user per institution is fine at this scale, revisit only when institutions ask. Billing tiers (#5 in the original diff) needs no separate item — already covered by P4 monetization |
+| `ad_campaigns.featured` is a separate BOOLEAN from `status` | Migration 25, ratified 2026-07-21. `status='active'` means "running/billable"; `featured` means "chosen for the homepage carousel" — two independent decisions (one automatic, one curatorial), conflating them would block feature-curating without pausing a campaign |
 
 ---
 
@@ -349,6 +357,8 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 - frontend: feat(skolex-home): P1 homepage hero port behind `NEXT_PUBLIC_FEATURE_SKOLEX_HOME` — Preview-verified (18/18 Playwright checks), founder-approved, merged to `main`
 - frontend: P1 cutover — flag flipped to Production, verified live on `www.elimux.ke`. **P1 SHIPPED.**
 - frontend: Add Skolex university-portal reference HTML (§11 harvest inventory)
+- sql: Kimi rules on university-portal feature diff — adopt/backlog/reject recorded in §6/§7
+- sql: Draft migration 25 (platform_settings + ad_campaigns verticals/creative fields) for Task 3 Gate A — ratified by Kimi, not yet applied (awaiting founder to run it in Supabase)
 
 ---
 
