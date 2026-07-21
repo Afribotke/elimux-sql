@@ -2,7 +2,7 @@
 
 **Purpose:** Single source of truth for onboarding any AI/dev session. Read this first. Update it at the END of every work session (Kimi prompts the update; Claude commits it).
 
-**Last updated:** 2026-07-21 (v9 — P2 (Partners & Advertisers homepage section) SHIPPED, live on production; phases renumbered — see §11)
+**Last updated:** 2026-07-21 (v10 — P4 Package 1 (Founder Pricing Portal, `/admin/settings`) SHIPPED, live on production)
 
 ---
 
@@ -125,6 +125,7 @@ ElimuX is a global education discovery SaaS. Students discover, compare, and app
 | Skolex university-portal feature diff ruled 2026-07-21 (Kimi, on the full inventory in §5/design/skolex-reference/html/skolex-university-portal.html) | ADOPT: dashboard landing + profile-field extension (portal upgrade batch, after P2, §6#10); institution-run ad campaigns as a direction (unify with advertiser flow in P4/P5, §6#15). BACKLOG: self-service scholarships, applications review queue, gated student-lead unlock (DPA 2019 caution), notifications panel (§6#11-14). REJECT: multi-user/RBAC — one user per institution is fine at this scale, revisit only when institutions ask. Billing tiers (#5 in the original diff) needs no separate item — already covered by P4 monetization |
 | `ad_campaigns.featured` is a separate BOOLEAN from `status` | Migration 25, ratified 2026-07-21. `status='active'` means "running/billable"; `featured` means "chosen for the homepage carousel" — two independent decisions (one automatic, one curatorial), conflating them would block feature-curating without pausing a campaign |
 | All platform prices centralized in `platform_settings` — never hardcoded in frontend/backend code | Founder directive, 2026-07-21. Entry ad price ratified at KES 10,000/month; public impression counts default OFF. Proven config-sourced (not hardcoded) during Task 3 acceptance testing: changed the DB value, confirmed the client refetch picked it up |
+| Founder Pricing Portal at `/admin/settings` — every platform price editable without touching code or SQL | P4 Package 1, shipped 2026-07-21. `GET`/`PATCH /api/admin/settings[/:key]` reuses the shared `adminMiddleware` (403, not a new 401) and the shared `supabase` client — deliberately not a new inline auth pattern. `PATCH` only updates existing keys (no create), so new price keys still need a migration to seed the row first. Sidebar nav entry lives in `admin/layout.tsx`'s `NAV_ITEMS` (the real nav surface every other admin sub-page uses), not `admin/page.tsx`'s unrelated "Platform Analytics" quick-link row |
 
 ---
 
@@ -365,6 +366,7 @@ SELECT id, name, logo_url, logo_source FROM institutions WHERE name ILIKE '%kips
 - frontend: feat(skolex-ads): Partners & Advertisers homepage section behind `NEXT_PUBLIC_FEATURE_SKOLEX_ADS` — Preview-verified (13/13 checks incl. live test-campaign probe), holding for founder approval
 - frontend: Add pause control to FeaturedCarousel (founder-caught gap vs spec, fixed by Kimi) — re-verified (6/6 pause/rotate checks), merged to `main`
 - frontend: P2 cutover — flag flipped to Production, verified live on `www.elimux.ke`. **P2 (Partners & Advertisers homepage section) SHIPPED.**
+- backend+frontend: feat(admin-pricing-portal): Founder Pricing Portal (P4 Package 1) — `GET`/`PATCH /api/admin/settings`, `/admin/settings` page, sidebar nav entry. Merged to `main` in both repos (backend `2f502c6`, frontend `0216dcc`) and deployed same day — no separate flag/cutover step, this is an admin-only surface. Backend deploy `212de90b-5713-4c3d-8d82-be0eb195d909` (Railway), frontend deploy `dpl_cc4o3hody2DGStDwKen9frhhg5Ho` (Vercel). Live-verified: `/api/config/public` returns all 6 new tier-price keys, `/admin/settings` renders "Platform Pricing" with all 9 settings editable (0 console errors), homepage unaffected. **P4 Package 1 SHIPPED.**
 
 ---
 
