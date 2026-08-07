@@ -1,0 +1,15 @@
+-- 33_kcse_grade_estimated_flag.sql
+-- programs.minimum_kcse_grade / minimum_kcse_grade_numeric already exist
+-- (added by elimux-frontend/grade-matcher-migration.sql, which was
+-- committed to the wrong repo and never landed here - documenting the real
+-- schema state, not re-adding those columns).
+--
+-- Every existing value in those columns is currently a placeholder: that
+-- migration backfilled every null grade to a flat 'C-', so there is no real
+-- per-program differentiation today (confirmed live: 12,446/12,446
+-- populated rows are 'C-', zero exceptions). This flag exists so an
+-- AI-estimated grade (plausible per program, but not sourced from a real
+-- cutoff) can be disclosed to end users separately from is_ai_generated -
+-- a real, verified program (is_ai_generated=false) can still have an
+-- estimated grade, and that distinction matters for what students see.
+ALTER TABLE programs ADD COLUMN IF NOT EXISTS kcse_grade_is_estimated BOOLEAN DEFAULT true;
